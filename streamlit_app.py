@@ -3,8 +3,8 @@ import random
 import cv2
 import numpy as np
 
-STUDENTS_DIR = "students"
-BACKGROUND = "classroom_bg.jpg"
+STUDENTS_DIR =  "My_Classmates/content/My_Classmates_small"
+BACKGROUND = "הורדה.jfif"
 
 def generate_class_image():
 
