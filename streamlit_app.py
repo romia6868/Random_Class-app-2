@@ -2,55 +2,74 @@ import os
 import random
 import cv2
 import numpy as np
-ZIP_PATH = "My_Classmates_small.zip"
-EXTRACT_PATH = "My_Classmates"
+import zipfile
+import streamlit as st
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+ZIP_PATH = os.path.join(BASE_DIR, "My_Classmates_small.zip")
+EXTRACT_PATH = os.path.join(BASE_DIR, "My_Classmates")
+
+# חילוץ ה-ZIP אם עוד לא חולץ
 if not os.path.exists(EXTRACT_PATH):
-    with zipfile.ZipFile(ZIP_PATH, 'r') as zip_ref:
+    with zipfile.ZipFile(ZIP_PATH, "r") as zip_ref:
         zip_ref.extractall(EXTRACT_PATH)
 
-REFERENCE_DIR = "My_Classmates/content/My_Classmates_small"
-BACKGROUND = "הורדה.jfif"
+REFERENCE_DIR = os.path.join(EXTRACT_PATH, "content", "My_Classmates_small")
+BACKGROUND = os.path.join(BASE_DIR, "הורדה.jfif")
+
 
 def generate_class_image():
 
     bg = cv2.imread(BACKGROUND)
-    bg = cv2.resize(bg,(900,600))
+
+    if bg is None:
+        st.error("Background image not found")
+        st.stop()
+
+    bg = cv2.resize(bg, (900, 600))
+
+    if not os.path.exists(REFERENCE_DIR):
+        st.error("Students folder not found")
+        st.stop()
 
     students = os.listdir(REFERENCE_DIR)
 
-    # כמה תלמידים יהיו בתמונה
-    num_present = random.randint(0,len(students))
-
-    present = random.sample(students,num_present)
+    num_present = random.randint(0, len(students))
+    present = random.sample(students, num_present)
 
     for name in present:
 
-        imgs = os.listdir(os.path.join(STUDENTS_DIR,name))
-        img_path = os.path.join(STUDENTS_DIR,name,random.choice(imgs))
+        student_dir = os.path.join(REFERENCE_DIR, name)
+        imgs = os.listdir(student_dir)
 
-        face = cv2.imread(img_path)
+        if len(imgs) > 0:
 
-        # שינוי גודל אקראי
-        scale = random.uniform(0.5,1.0)
-        face = cv2.resize(face,(0,0),fx=scale,fy=scale)
+            img_path = os.path.join(student_dir, random.choice(imgs))
+            face = cv2.imread(img_path)
 
-        h,w,_ = face.shape
+            if face is not None:
 
-        # מיקום אקראי
-        x = random.randint(0,bg.shape[1]-w)
-        y = random.randint(0,bg.shape[0]-h)
+                scale = random.uniform(0.4, 0.8)
+                face = cv2.resize(face, (0, 0), fx=scale, fy=scale)
 
-        bg[y:y+h,x:x+w] = face
+                h, w, _ = face.shape
 
-    return bg,present
+                if h < bg.shape[0] and w < bg.shape[1]:
 
-import streamlit as st
+                    x = random.randint(0, bg.shape[1] - w)
+                    y = random.randint(0, bg.shape[0] - h)
+
+                    bg[y:y+h, x:x+w] = face
+
+    return bg, present
+
+
+st.title("מחולל תמונת כיתה")
 
 if st.button("צור תמונת כיתה רנדומלית"):
 
-    img,present = generate_class_image()
+    img, present = generate_class_image()
 
-    st.image(img,channels="BGR")
-
-    st.write("נוכחים:",present)
+    st.image(img, channels="BGR")
+    st.write("נוכחים:", present)
