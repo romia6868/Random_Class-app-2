@@ -1,7 +1,6 @@
 import os
 import random
 import cv2
-import numpy as np
 import zipfile
 import streamlit as st
 
@@ -50,17 +49,20 @@ def generate_class_image():
 
             if face is not None:
 
-                scale = random.uniform(0.4, 0.8)
-                face = cv2.resize(face, (0, 0), fx=scale, fy=scale)
+                h, w, c = face.shape
 
-                h, w, _ = face.shape
+                # הגדלה פי 3
+                new_w = int(w * 3)
+                new_h = int(h * 3)
 
-                if h < bg.shape[0] and w < bg.shape[1]:
+                face = cv2.resize(face, (new_w, new_h))
 
-                    x = random.randint(0, bg.shape[1] - w)
-                    y = random.randint(0, bg.shape[0] - h)
+                if new_h < bg.shape[0] and new_w < bg.shape[1]:
 
-                    bg[y:y+h, x:x+w] = face
+                    x = random.randint(0, bg.shape[1] - new_w)
+                    y = random.randint(0, bg.shape[0] - new_h)
+
+                    bg[y:y+new_h, x:x+new_w] = face
 
     return bg, present
 
