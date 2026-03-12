@@ -2,8 +2,14 @@ import os
 import random
 import cv2
 import numpy as np
+ZIP_PATH = "My_Classmates_small.zip"
+EXTRACT_PATH = "My_Classmates"
 
-STUDENTS_DIR =  "My_Classmates/content/My_Classmates_small"
+if not os.path.exists(EXTRACT_PATH):
+    with zipfile.ZipFile(ZIP_PATH, 'r') as zip_ref:
+        zip_ref.extractall(EXTRACT_PATH)
+
+REFERENCE_DIR = "My_Classmates/content/My_Classmates_small"
 BACKGROUND = "הורדה.jfif"
 
 def generate_class_image():
@@ -11,7 +17,7 @@ def generate_class_image():
     bg = cv2.imread(BACKGROUND)
     bg = cv2.resize(bg,(900,600))
 
-    students = os.listdir(STUDENTS_DIR)
+    students = os.listdir(REFERENCE_DIR)
 
     # כמה תלמידים יהיו בתמונה
     num_present = random.randint(0,len(students))
